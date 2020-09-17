@@ -2,10 +2,12 @@ const artistData = require('../data/db').Artist;
 
 const artistService = () => {
     const getAllArtists = (cb, errorCb) => {
+
         // Your implementation goes here
     };
 
     const getArtistById = (id, cb, errorCb) => {
+
         // Your implementation goes here
     };
 

@@ -1,9 +1,12 @@
-const artData = require('../data/db').Art;
+const artData = require('../data/db');
 
 
 const artService = () => {
     const getAllArts = (cb, errorCb) => {
         // Your implementation goes here
+        artData.insertOne(
+            {Artist: "mambo number six"}
+        );
         console.log("lol am in get all arts!")
     };
 
