@@ -17,11 +17,10 @@ const artistService = () => {
         });
     };
     const getArtistById = async id => {
-        if(artistData.exists(id)){
+        try {
             return await artistData.findById(id);
-        }
-        else{
-            return false;
+        } catch (error) {
+            return error;
         }
     };
 
@@ -39,4 +38,5 @@ const artistService = () => {
         createArtist
     };
 };
+
 module.exports = artistService();
