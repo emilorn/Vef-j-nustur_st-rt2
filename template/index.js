@@ -17,84 +17,87 @@ server.listen(port, () => {
     console.log(`Server is listening on port: ${port}`);
 });
 
-server.get("/api/arts", (request, response) => {
+server.get("/api/arts", async function(request, response){
+    let arts = await artService.getAllArts();
     response.status(200);
-    let arts = artService.getAllArts();
-    return response.status(200).send(arts)
+    return response.json(arts);
 });
 
 
-server.get("/api/arts/:id", (request, response) => {
+server.get("/api/arts/:id", async function(request, response){
     let id = request.params.id;
-    console.log(id);
-    let art = artService.getArtById(id);
+    const art = await artService.getArtById(id);
     response.status(200);
-    return response.json({"Hah": "lol"})
+    return response.json(art);
 });
 
 
-server.get("/api/artists", (request, response) => {
-    console.log(request);
-    let artists = artistService.getAllArtists();
-    response.status(200).send(artists);
+server.get("/api/artists", async function(request, response) {
+    const artists = await artistService.getAllArtists();
+    response.status(200);
+    return response.json(artists);
 });
 
 
-server.get("/api/artist/:id", (request, response) => {
+server.get("/api/artists/:id", async function(request, response){
     let id = request.params.id;
-    let artist = artistService.getArtistById(id);
-    console.log(request);
+    let artist = await artistService.getArtistById(id);
     response.status(200);
-});
-
-server.get("/api/customers", (request, response) => {
-    console.log(request);
-    let customers = customerService.getAllCustomers();
-    response.status(200);
+    return response.json(artist);
 });
 
 
-server.get("/api/customers/:id", (request, response) => {
+server.get('/api/customers', async function(request, response) {
+    const customers = await customerService.getAllCustomers();
+    response.status(200);
+    return response.json(customers);
+});
+
+
+server.get("/api/customers/:id", async function(request, response){
     let id = request.params.id;
-    let customer = customerService.getCustomerById(id);
+    let customer = await customerService.getCustomerById(id);
     response.status(200);
+    return response.json(customer);
 });
 
 
-server.get("/api/customers/:id/auction-bids", (request, response) => {
+server.get("/api/customers/:id/auction-bids", async function(request, response){
     let id = request.params.id;
-    let customer_bids = customerService.getCustomerAuctionBids(id);
+    let customer_bids = await customerService.getCustomerAuctionBids(id);
     response.status(200);
+    return response.json(customer_bids);
 });
 
 
-server.get("/api/auctions", (request, response) => {
-    console.log(request);
-    let auctions = auctionService.getAllAuctions();
+server.get("/api/auctions", async function(request, response){
+    let auctions = await auctionService.getAllAuctions();
     response.status(200);
+    return response.json(auctions);
 });
 
 
-server.get("/api/auctions/:id", (request, response) => {
+server.get("/api/auctions/:id", async function(request, response){
     let id = request.params.id;
-    let auction = auctionService.getAuctionById(id);
+    let auction = await auctionService.getAuctionById(id);
     response.status(200);
+    return response.json(auction);
 });
 
 
-server.get("/api/auctions/:id/winner", (request, response) => {
+server.get("/api/auctions/:id/winner", async function(request, response){
     let id = request.params.id;
-    let auction_vinner = auctionService.getAuctionWinner(id);
-    console.log(request);
+    let auction_winner = await auctionService.getAuctionWinner(id);
     response.status(200);
+    return response.json(auction_winner);
 });
 
 
-server.get("/api/auctions/:id/bids", (request, response) => {
+server.get("/api/auctions/:id/bids", async function(request, response){
     let id = request.params.id;
-    let auction_bids = auctionService.getAuctionBidsWithinAuction(id);
-    console.log(request);
+    let auction_bids = await auctionService.getAuctionBidsWithinAuction(id);
     response.status(200);
+    return response.json(auction_bids);
 });
 
 //==================== POST ======================================
@@ -103,8 +106,8 @@ server.get("/api/auctions/:id/bids", (request, response) => {
 
 server.post("/api/arts", (request, response) => {
     const art = request.body;
-    artService.createArt(art, function (art){
-        return response.status(200).json(art);
+    artService.createArt(art, function (returned_art){
+        return response.status(200).json(returned_art);
     },
         function (error){
         return response.status(400).json(error)
@@ -116,8 +119,8 @@ server.post("/api/arts", (request, response) => {
 server.post("/api/artists", (request, response) => {
 
     const artist = request.body;
-    artistService.createArtist(artist, function (artist){
-            return response.status(200).json(artist);
+    artistService.createArtist(artist, function (returned_artist){
+            return response.status(200).json(returned_artist);
         },
         function (error){
             return response.status(400).json(error)
@@ -127,22 +130,37 @@ server.post("/api/artists", (request, response) => {
 
 
 server.post("/api/customers", (request, response) => {
-    console.log(request);
-    response.status(201);
+    const costumer = request.body;
+    customerService.createCustomer(costumer, function (returned_costumer){
+            return response.status(200).json(returned_costumer);
+        },
+        function (error){
+            return response.status(400).json(error)
+        });
 });
 
 
 
 server.post("/api/auctions", (request, response) => {
-    console.log(request);
-    response.status(201);
+    const auction = request.body;
+    auctionService.createAuction(auction, function (returned_auction){
+            return response.status(200).json(returned_auction);
+        },
+        function (error){
+            return response.status(400).json(error)
+        });
 });
 
 
-server.post("/api/auctions/:id/bids", (request, response) => {
-    let id = request.params.id;
-    console.log(request);
-    response.status(201);
+server.post("/api/auctions/:id/bids", (request, response) => { //auctionId, customerId, price, cb, errorCb
+    const body = request.body;
+    let id = request.params.id; // IDk man
+    auctionService.placeNewBid(id, 2, function (artist){
+            return response.status(200).json(artist);
+        },
+        function (error){
+            return response.status(400).json(error)
+        });
 });
 
 

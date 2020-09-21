@@ -9,20 +9,22 @@ const artService = () => {
         } catch(err) {
             return err;
         }
-    }
+    };
 
 
     const    getAllArts = async () => {
         return await globalTryCatch(async () => {
-            const arts = await artData.find({});
-            return arts;
+            return await artData.find({});
         });
-    }
+    };
 
 
-
-    const getArtById = (id, callBack, errorCallBack) => {
-        // Your implementation goes here
+    const getArtById = async id => {
+        try {
+            return await artData.findById(id);
+        } catch (error) {
+            return error;
+        }
     };
 
     const createArt = (art, callBack, errorCallBack) => {

@@ -8,18 +8,21 @@ const artistService = () => {
         } catch(err) {
             return err;
         }
-    }
+    };
 
 
     const getAllArtists = async () => {
         return await globalTryCatch(async () => {
-            const artists = await artistData.find({});
-            return artists;
+            return await artistData.find({});
         });
-    }
-    const getArtistById = (id, cb, errorCb) => {
-
-        // Your implementation goes here
+    };
+    const getArtistById = async id => {
+        if(artistData.exists(id)){
+            return await artistData.findById(id);
+        }
+        else{
+            return false;
+        }
     };
 
 
@@ -36,5 +39,4 @@ const artistService = () => {
         createArtist
     };
 };
-
 module.exports = artistService();
