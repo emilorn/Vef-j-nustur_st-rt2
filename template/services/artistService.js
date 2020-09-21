@@ -11,10 +11,14 @@ const artistService = () => {
         // Your implementation goes here
     };
 
-    const createArtist = (artist, cb, errorCb) => {
-        // Your implementation goes here
-    };
 
+    const createArtist = (artist, callBack, errorCallBack) => {
+        // Your implementation goes here
+        artistData.create(artist, function(error, result){
+            if (error) { errorCallBack(error); }
+            else { callBack(result); }
+        })
+    };
     return {
         getAllArtists,
         getArtistById,

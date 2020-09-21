@@ -1,3 +1,5 @@
+
+
 const artService = () => {
     const getAllArts = (cb, errorCb) => {
         // Your implementation goes here
@@ -9,6 +11,7 @@ const artService = () => {
 
     const createArt = (art, cb, errorCb) => {
         // Your implementation goes here
+
     };
 
     return {

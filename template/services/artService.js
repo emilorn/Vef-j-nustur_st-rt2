@@ -1,21 +1,36 @@
-const artData = require('../data/db');
+const artData = require('../data/db').Art;
 
 
 const artService = () => {
-    const getAllArts = (cb, errorCb) => {
+
+    const globalTryCatch = async cb => {
+        try {
+            return await cb();
+        } catch(err) {
+            return err;
+        }
+    }
+
+
+    const getAllArts = async () => {
+        return await globalTryCatch(async () => {
+            const arts = await artData.find({});
+            return arts;
+        });
+    }
+
+
+
+    const getArtById = (id, callBack, errorCallBack) => {
         // Your implementation goes here
-        artData.insertOne(
-            {Artist: "mambo number six"}
-        );
-        console.log("lol am in get all arts!")
     };
 
-    const getArtById = (id, cb, errorCb) => {
+    const createArt = (art, callBack, errorCallBack) => {
         // Your implementation goes here
-    };
-
-    const createArt = (art, cb, errorCb) => {
-        // Your implementation goes here
+        artData.create(art, function(error, result){
+            if (error) { errorCallBack(error); }
+            else { callBack(result); }
+        })
     };
 
     return {
