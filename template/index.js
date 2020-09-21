@@ -36,7 +36,7 @@ server.get("/api/arts/:id", (request, response) => {
 server.get("/api/artists", (request, response) => {
     console.log(request);
     let artists = artistService.getAllArtists();
-    response.status(200).send();
+    response.status(200).send(artists);
 });
 
 

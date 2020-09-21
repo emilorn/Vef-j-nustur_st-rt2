@@ -12,7 +12,7 @@ const artService = () => {
     }
 
 
-    const getAllArts = async () => {
+    const    getAllArts = async () => {
         return await globalTryCatch(async () => {
             const arts = await artData.find({});
             return arts;
