@@ -8,7 +8,7 @@ module.exports = new Schema({
     isAuctionItem: Boolean,
     title: {type: String, required: true},
     artistId: {type: mongoose.ObjectId, required: true},
-    date: {type: Date, required: true},
+    date: {type: Date, required: true , default: Date.now},
     description: String
 
 });
