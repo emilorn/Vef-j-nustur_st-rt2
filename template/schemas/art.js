@@ -5,7 +5,7 @@ module.exports = new Schema({
 
     name: String,
     images: [String],
-    isAuctionItem: Boolean,
+    isAuctionItem: {type: Boolean, default: false, required: true},
     title: {type: String, required: true},
     artistId: {type: mongoose.ObjectId, required: true},
     date: {type: Date, required: true , default: Date.now},

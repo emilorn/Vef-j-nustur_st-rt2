@@ -1,5 +1,8 @@
 const auctionData = require('../data/db').Auction;
 const bidData = require('../data/db').AuctionBid;
+const artData = require('../data/db').Art;
+const getCustomerById = require('./customerService').getCustomerById;
+
 
 
 const auctionService = () => {
@@ -35,16 +38,72 @@ const auctionService = () => {
         // Your implementation goes here
         auctionData.create(auction, function(error, result){
             if (error) { errorCallBack(error); }
-            else { callBack(result); }
+            else {
+                artData.updateOne({
+                    id: auction.artId
+                }, {
+                    isAuctionItem : true
+                }, (error, response) => {
+                    if(error){
+                        throw new Error(error)
+                    }
+                    else{
+                        callBack(result);
+                        console.log("Art successfully turned into an auction item")
+                    }
+                })
+
+
+            }
         })
     };
 
-	const getAuctionBidsWithinAuction = (auctionId, cb, errorCb) => {
+	const getAuctionBidsWithinAuction = async auctionId => {
         // Your implementation goes here
+        try {
+            return await bidData.find({"auctionId" : auctionId});
+        } catch (error) {
+            return error;
+        }
+
+
     };
 
-	const placeNewBid = (auctionId, customerId, price, cb, errorCb) => {
+	const placeNewBid = async function (auctionId, customerId, price, callBack, errorCallBack){
 		// Your implementation goes here
+
+        const customer = await getCustomerById(customerId);
+        if(customer._doc){
+            const auction = await getAuctionById(auctionId);
+            if(auction._doc){
+                const auction_bid = await getAuctionBidsWithinAuction(auctionId);
+
+                if(auction._doc.minimumPrice > price){
+                    return errorCallBack("Price too low")
+                }
+
+                bidData.create({
+                    auctionId : auctionId,
+                    customerId : customerId,
+                    price: price
+                }, function(error, result) {
+                    if (error) {
+                        errorCallBack(error);
+                    } else {
+
+                        callBack(result);
+                    }
+                })
+
+            }
+            else {
+                return errorCallBack("Auction not found");
+            }
+        }
+        else{
+            return errorCallBack("Customer not found");
+        }
+
 	};
 
     return {

@@ -23,7 +23,7 @@ const artService = () => {
         try {
             return await artData.findById(id);
         } catch (error) {
-            return error;
+            return error
         }
     };
 
