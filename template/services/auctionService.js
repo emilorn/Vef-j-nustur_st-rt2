@@ -34,28 +34,32 @@ const auctionService = () => {
     };
 
 
-    const createAuction = (auction, callBack, errorCallBack) => {
-        // Your implementation goes here
-        auctionData.create(auction, function(error, result){
-            if (error) { errorCallBack(error); }
-            else {
-                artData.updateOne({
-                    id: auction.artId
-                }, {
-                    isAuctionItem : true
-                }, (error, response) => {
-                    if(error){
-                        throw new Error(error)
-                    }
-                    else{
-                        callBack(result);
-                        console.log("Art successfully turned into an auction item")
-                    }
-                })
+    const createAuction = async (auction, callBack, errorCallBack) => {
 
-
+        let art = await artData.findById(auction.artId);
+        if (art) {
+            if (art._doc.isAuctionItem){
+                let if_auction = auctionData.findOne({id: auction.artId})  // NOT WORKING
+                if (if_auction){
+                    auctionData.create(auction, function(error, result){
+                        if (error) { errorCallBack(error); }
+                        else { return callBack(result); }
+                    })
+                }
+                else {
+                    return errorCallBack("An auction for this art already exists");
+                }
             }
-        })
+            else {
+                return errorCallBack("Art is not an auction item");
+            }
+        }
+        else {
+            return errorCallBack("Art not found");
+        }
+
+
+
     };
 
 	const getAuctionBidsWithinAuction = async auctionId => {
@@ -77,7 +81,6 @@ const auctionService = () => {
             const auction = await getAuctionById(auctionId);
             if(auction._doc){
                 const auction_bid = await getAuctionBidsWithinAuction(auctionId);
-
                 if(auction._doc.minimumPrice > price){
                     return errorCallBack("Price too low")
                 }
