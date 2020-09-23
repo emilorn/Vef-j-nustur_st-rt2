@@ -16,7 +16,7 @@ const server = express();
 server.use(bodyParser.json());
 
 server.listen(port, () => {
-    console.log(`Server is listening on port: ${port}`);
+    console.log(`Server is listening on port: ${port}.`);
 });
 
 server.get("/api/arts", async function(request, response){
@@ -31,16 +31,23 @@ server.get("/api/arts/:id", async function(request, response){
     if(mongoose.isValidObjectId(id)){
         const art = await artService.getArtById(id);
         if(!(art instanceof Error)){
-            response.status(200);
-            return response.json(art);
+            if(art){
+                response.status(200);
+                return response.json(art);
+            }
+            else{
+                response.status(404);
+                return response.json("Art not found.");
+            }
         }
+
         else{
             response.status(404);
             return response.json(art.message)
         }
     }
     else{
-        return response.status(404).message("Not a valid art id");
+        return response.status(404).message("Not a valid art id.");
     }
 
 
@@ -61,8 +68,14 @@ server.get("/api/artists/:id", async function(request, response){
 
         let artist = await artistService.getArtistById(id);
         if(!(artist instanceof Error)){
-            response.status(200);
-            return response.json(artist);
+            if(artist){
+                response.status(200);
+                return response.json(artist);
+            }
+            else{
+                response.status(404);
+                return response.json("Artist not found.")
+            }
         }
         else{
             response.status(404);
@@ -70,7 +83,7 @@ server.get("/api/artists/:id", async function(request, response){
         }
     }
     else{
-        return response.status(404).message("Not a valid artist id");
+        return response.status(404).message("Not a valid artist id.");
     }
 });
 
@@ -87,8 +100,14 @@ server.get("/api/customers/:id", async function(request, response){
     if(mongoose.isValidObjectId(id)){
         let customer = await customerService.getCustomerById(id);
         if(!(customer instanceof Error)){
-            response.status(200);
-            return response.json(customer);
+            if(customer){
+                response.status(200);
+                return response.json(customer);
+            }
+            else{
+                response.status(404);
+                return response.json("Customer not found.")
+            }
         }
         else{
             response.status(404);
@@ -96,7 +115,7 @@ server.get("/api/customers/:id", async function(request, response){
         }
     }
     else{
-        return response.status(404).message("Not a valid customer id");
+        return response.status(404).message("Not a valid customer id.");
     }
 });
 
@@ -104,19 +123,34 @@ server.get("/api/customers/:id", async function(request, response){
 server.get("/api/customers/:id/auction-bids", async function(request, response){
     let id = request.params.id;
     if(mongoose.isValidObjectId(id)){
-        let customer_bids = await customerService.getCustomerAuctionBids(id);
-        response.status(200);
-        if(!(customer_bids instanceof Error)){
-            response.status(200);
-            return response.json(customer_bids);
-        }
-        else{
-            response.status(404);
-            return response.json(customer_bids.message)
-        }
+        await customerService.getCustomerAuctionBids(id, function (returned_bids){
+            if(returned_bids){
+                response.status(200);
+                return response.json(returned_bids);
+            }
+            else{
+                response.status(404);
+                return response.json("No bids were found.")
+            }
+        }, function (error){
+
+            if(error === "Customer not found"){
+                response.status(404);
+                return response.json("Customer not found.")
+            }
+            else if(error === "Customer has no bids") {
+                response.status(404);
+                return response.json("Customer has no bids.")
+            }
+            else{
+                response.status(520);
+                return response.json(error.message)
+            }
+
+        });
     }
     else{
-        return response.status(404).message("Not a valid customer id");
+        return response.status(404).message("Not a valid customer id.");
     }
 
 });
@@ -135,8 +169,15 @@ server.get("/api/auctions/:id", async function(request, response){
         let auction = await auctionService.getAuctionById(id);
         response.status(200);
         if(!(auction instanceof Error)){
-            response.status(200);
-            return response.json(auction);
+            if(auction){
+                response.status(200);
+                return response.json(auction);
+            }
+            else{
+                response.status(404);
+                return response.json("Auction not found.")
+            }
+
         }
         else{
             response.status(404);
@@ -144,7 +185,7 @@ server.get("/api/auctions/:id", async function(request, response){
         }
     }
     else{
-        return response.status(404).message("Not a valid auction id");
+        return response.status(404).message("Not a valid auction id.");
     }
 
 });
@@ -153,18 +194,31 @@ server.get("/api/auctions/:id", async function(request, response){
 server.get("/api/auctions/:id/winner", async function(request, response){
     let id = request.params.id;
     if(mongoose.isValidObjectId(id)){
-        let auction_winner = await auctionService.getAuctionWinner(id);
-        if(!(auction_winner instanceof Error)){
-            response.status(200);
-            return response.json(auction_winner);
-        }
-        else{
-            response.status(404);
-            return response.json(auction_winner.message)
-        }
-    }
+        let auction_winner = await auctionService.getAuctionWinner(id, function (returned_winner){
+            if(!(returned_winner instanceof Error)){
+                if(returned_winner){
+                    response.status(200);
+                    return response.json(returned_winner);
+                }
+                else{
+                    response.status(404);
+                    return response.json("No winner found.")
+                }
+            }
+
+        }, function (error){
+            if(error === "Auction does not exist"){
+                response.status(404);
+                return response.json("Auction does not exist.")
+            }
+            else{
+                response.status(404);
+                return response.json(auction_winner.message)
+            }
+        });}
+
     else{
-        return response.status(404).message("Not a valid auction id");
+        return response.status(404).message("Not a valid auction id.");
     }
 });
 
@@ -183,7 +237,7 @@ server.get("/api/auctions/:id/bids", async function(request, response){
         }
     }
     else{
-        return response.status(404).message("Not a valid auction id");
+        return response.status(404).message("Not a valid auction id.");
     }
 
 });
@@ -236,13 +290,13 @@ server.post("/api/auctions", (request, response) => {
             return response.status(200).json(returned_auction);
         },
         function (error){
-        if(error == "An auction for this art already exists"){
+        if(error === "An auction for this art already exists"){
             return response.status(409).json(error)
         }
-        else if(error == "Art is not an auction item"){
+        else if(error === "Art is not an auction item"){
             return response.status(412).json(error)
         }
-        else if(error =="Art not found"){
+        else if(error ==="Art not found"){
             return response.status(404).json(error)
         }
         else{
@@ -263,15 +317,15 @@ server.post("/api/auctions/:id/bids", (request, response) => { //auctionId, cust
                 return response.status(200).json(returned_art);
             },
             function (error){
-                if(error == "Customer not found"){
+                if(error === "Customer not found"){
 
                     return response.status(404).json(error)
                 }
-                else if(error == "Auction not found"){
+                else if(error === "Auction not found"){
 
                     return response.status(404).json(error)
                 }
-                else if(error == "Price too low"){
+                else if(error === "Price too low"){
                     return response.status(412).json(error)
                 }
 
@@ -280,10 +334,10 @@ server.post("/api/auctions/:id/bids", (request, response) => { //auctionId, cust
     }
     else{
         if(!validID){
-            return response.status(404).message("Not a valid auction id");
+            return response.status(404).message("Not a valid auction id.");
         }
         if(!validCustomerId){
-            return response.status(404).message("Not a valid customer id");
+            return response.status(404).message("Not a valid customer id.");
         }
     }
 

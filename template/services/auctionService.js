@@ -29,8 +29,23 @@ const auctionService = () => {
         }
     };
 
-    const getAuctionWinner = (auctionId, cb, errorCb) => {
+    const getAuctionWinner = async (auctionId, callBack, errorCallBack) => {
         // Your implementation goes here
+
+        const auction = await auctionData.findById(auctionId);
+
+        if(auction){
+            if(auction.auctionWinner){
+                let winner = await getCustomerById(auction.auctionWinner);
+                return callBack(winner)
+            }
+            else{
+                return callBack(null);
+            }
+        }
+        else{
+            return errorCallBack("Auction does not exist")
+        }
     };
 
 
