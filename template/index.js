@@ -236,7 +236,19 @@ server.post("/api/auctions", (request, response) => {
             return response.status(200).json(returned_auction);
         },
         function (error){
-            return response.status(400).json(error)
+        if(error == "An auction for this art already exists"){
+            return response.status(409).json(error)
+        }
+        else if(error == "Art is not an auction item"){
+            return response.status(412).json(error)
+        }
+        else if(error =="Art not found"){
+            return response.status(404).json(error)
+        }
+        else{
+            return response.status(520).json(error)
+        }
+
         });
 });
 

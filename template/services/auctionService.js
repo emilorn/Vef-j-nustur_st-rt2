@@ -39,8 +39,9 @@ const auctionService = () => {
         let art = await artData.findById(auction.artId);
         if (art) {
             if (art._doc.isAuctionItem){
-                let if_auction = auctionData.findOne({id: auction.artId})  // NOT WORKING
-                if (if_auction){
+                let if_auction = await auctionData.findOne({artId : auction.artId}) // Find duplicate
+
+                if (!if_auction){
                     auctionData.create(auction, function(error, result){
                         if (error) { errorCallBack(error); }
                         else { return callBack(result); }
@@ -77,11 +78,17 @@ const auctionService = () => {
 		// Your implementation goes here
 
         const customer = await getCustomerById(customerId);
-        if(customer._doc){
+        if(customer){
             const auction = await getAuctionById(auctionId);
-            if(auction._doc){
-                const auction_bid = await getAuctionBidsWithinAuction(auctionId);
-                if(auction._doc.minimumPrice > price){
+            if(auction){
+                const auction_bids = await bidData.find({auctionId : auctionId});
+                let highest_bid = 0;
+                for(let i = 0; i < auction_bids.length; i++){
+                    if(highest_bid < auction_bids[i].price){
+                        highest_bid = auction_bids[i].price
+                    }
+                }
+                if(auction._doc.minimumPrice > price || price <= highest_bid){
                     return errorCallBack("Price too low")
                 }
 
@@ -89,11 +96,12 @@ const auctionService = () => {
                     auctionId : auctionId,
                     customerId : customerId,
                     price: price
-                }, function(error, result) {
+                },async  function(error, result) {
                     if (error) {
                         errorCallBack(error);
                     } else {
-
+                        auction.auctionWinner = customerId
+                        await auction.save()
                         callBack(result);
                     }
                 })
