@@ -33,14 +33,12 @@ const customerService = () => {
         if(customer){
             const bids = await bidData.find({customerId : customerId});
 
-            if(bids.length < 0){
+            if(bids.length > 0){
                 return callBack(bids);
-            }
-            else{
+            } else {
                 return errorCallBack("Customer has no bids");
             }
-        }
-        else{
+        } else {
             return errorCallBack("Customer not found");
         }
 

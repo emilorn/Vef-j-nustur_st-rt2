@@ -30,17 +30,19 @@ const auctionService = () => {
     };
 
     const getAuctionWinner = async (auctionId, callBack, errorCallBack) => {
-        // Your implementation goes here
 
         const auction = await auctionData.findById(auctionId);
 
         if(auction){
             if(auction.auctionWinner){
-                let winner = await getCustomerById(auction.auctionWinner);
-                return callBack(winner)
-            }
-            else{
-                return callBack(null);
+                if (auction.endDate < Date.now()) {
+                    let winner = await getCustomerById(auction.auctionWinner);
+                    return callBack(winner)
+                } else {
+                    return errorCallBack("The auction is still running")
+                }
+            } else {
+                return callBack("This auction has no bids");
             }
         }
         else{
@@ -61,16 +63,13 @@ const auctionService = () => {
                         if (error) { errorCallBack(error); }
                         else { return callBack(result); }
                     })
-                }
-                else {
+                } else {
                     return errorCallBack("An auction for this art already exists");
                 }
-            }
-            else {
+            } else {
                 return errorCallBack("Art is not an auction item");
             }
-        }
-        else {
+        } else {
             return errorCallBack("Art not found");
         }
 
@@ -79,54 +78,50 @@ const auctionService = () => {
     };
 
 	const getAuctionBidsWithinAuction = async auctionId => {
-        // Your implementation goes here
         try {
             return await bidData.find({"auctionId" : auctionId});
         } catch (error) {
             return error;
         }
-
-
     };
 
 	const placeNewBid = async function (auctionId, customerId, price, callBack, errorCallBack){
-		// Your implementation goes here
-
         const customer = await getCustomerById(customerId);
         if(customer){
             const auction = await getAuctionById(auctionId);
             if(auction){
-                const auction_bids = await bidData.find({auctionId : auctionId});
-                let highest_bid = 0;
-                for(let i = 0; i < auction_bids.length; i++){
-                    if(highest_bid < auction_bids[i].price){
-                        highest_bid = auction_bids[i].price
+                if (auction.endDate > Date.now()){
+                    const auction_bids = await bidData.find({auctionId : auctionId});
+                    let highest_bid = 0;
+                    for(let i = 0; i < auction_bids.length; i++){
+                        if(highest_bid < auction_bids[i].price){
+                            highest_bid = auction_bids[i].price
+                        }
                     }
-                }
-                if(auction._doc.minimumPrice > price || price <= highest_bid){
-                    return errorCallBack("Price too low")
-                }
-
-                bidData.create({
-                    auctionId : auctionId,
-                    customerId : customerId,
-                    price: price
-                },async  function(error, result) {
-                    if (error) {
-                        errorCallBack(error);
-                    } else {
-                        auction.auctionWinner = customerId
-                        await auction.save()
-                        callBack(result);
+                    if(auction._doc.minimumPrice > price || price <= highest_bid){
+                        return errorCallBack("Price too low")
                     }
-                })
 
-            }
-            else {
+                    bidData.create({
+                        auctionId : auctionId,
+                        customerId : customerId,
+                        price: price
+                    },async  function(error, result) {
+                        if (error) {
+                            errorCallBack(error);
+                        } else {
+                            auction.auctionWinner = customerId
+                            await auction.save()
+                            callBack(result);
+                        }
+                    })
+                } else {
+                    return errorCallBack ("Auction has completed")
+                }
+            } else {
                 return errorCallBack("Auction not found");
             }
-        }
-        else{
+        } else{
             return errorCallBack("Customer not found");
         }
 

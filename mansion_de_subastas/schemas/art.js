@@ -4,7 +4,6 @@ require('mongoose-type-url');
 
 module.exports = new Schema({
 
-    name: String,
     images: [{type: mongoose.SchemaTypes.Url}],
     isAuctionItem: {type: Boolean, default: false, required: true},
     title: {type: String, required: true},

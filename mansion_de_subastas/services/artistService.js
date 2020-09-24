@@ -28,8 +28,11 @@ const artistService = () => {
     const createArtist = (artist, callBack, errorCallBack) => {
         // Your implementation goes here
         artistData.create(artist, function(error, result){
-            if (error) { errorCallBack(error); }
-            else { callBack(result); }
+            if (error) {
+                errorCallBack(error);
+            } else {
+                callBack(result);
+            }
         })
     };
     return {
